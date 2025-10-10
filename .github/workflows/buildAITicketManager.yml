@@ -8,13 +8,8 @@ on:
 
 jobs:
   build:
-    name: Build and Test with MySQL
+    name: Build and Test with H2
     runs-on: ubuntu-latest
-
-    env:
-      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -26,10 +21,5 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Verify database variables are set
-        run: |
-          echo "Using datasource URL: $SPRING_DATASOURCE_URL"
-          echo "Datasource user: $SPRING_DATASOURCE_USERNAME"
-
-      - name: Build with Maven
-        run: mvn -B clean package --file pom.xml
+      - name: Build and test using H2 profile
+        run: mvn -B clean verify -Dspring.profiles.active=test --file pom.xml
