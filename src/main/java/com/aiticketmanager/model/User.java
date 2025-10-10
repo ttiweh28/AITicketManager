@@ -1,5 +1,6 @@
 package com.aiticketmanager.model;
 
+import com.aiticketmanager.model.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -34,8 +35,11 @@ public abstract class User {
     @Pattern(regexp = "\\d{3}-\\d{3}-\\d{4}", message = "Phone format: 555-555-5555")
     private String phone;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 }
-
