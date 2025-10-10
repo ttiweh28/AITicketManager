@@ -10,6 +10,8 @@ public class DtoMapper {
 
     private final ModelMapper mapper = new ModelMapper();
 
+    // ===== ENTITY → DTO =====
+
     public TicketDTO toTicketDTO(Ticket ticket) {
         return mapper.map(ticket, TicketDTO.class);
     }
@@ -33,5 +35,23 @@ public class DtoMapper {
 
     public ManagerDTO toManagerDTO(Manager manager) {
         return mapper.map(manager, ManagerDTO.class);
+    }
+
+    // ===== DTO → ENTITY =====
+
+    public Ticket toEntity(TicketDTO dto) {
+        return mapper.map(dto, Ticket.class);
+    }
+
+    public Customer toEntity(CustomerDTO dto) {
+        return mapper.map(dto, Customer.class);
+    }
+
+    public SupportAgent toEntity(SupportAgentDTO dto) {
+        return mapper.map(dto, SupportAgent.class);
+    }
+
+    public Manager toEntity(ManagerDTO dto) {
+        return mapper.map(dto, Manager.class);
     }
 }
