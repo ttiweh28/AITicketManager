@@ -3,12 +3,20 @@ package com.aiticketmanager.util;
 import com.aiticketmanager.dto.*;
 import com.aiticketmanager.model.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DtoMapper {
 
-    private final ModelMapper mapper = new ModelMapper();
+    private final ModelMapper mapper;
+
+    public DtoMapper() {
+        this.mapper = new ModelMapper();
+        this.mapper.getConfiguration()
+                .setAmbiguityIgnored(true)
+                .setMatchingStrategy(MatchingStrategies.STRICT);
+    }
 
     // ===== ENTITY → DTO =====
 

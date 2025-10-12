@@ -10,6 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Table(name = "support_agents")
 public class SupportAgent extends User {
 
     @NotBlank(message = "Expertise field is required")

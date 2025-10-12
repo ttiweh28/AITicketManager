@@ -1,5 +1,6 @@
 package com.aiticketmanager.config;
 
+import com.aiticketmanager.security.CustomUserDetailsService;
 import com.aiticketmanager.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
