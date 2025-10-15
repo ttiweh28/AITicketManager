@@ -34,7 +34,7 @@ public class TicketServiceImpl implements TicketService {
         log.info("Creating ticket for customer ID {}", dto.customerId());
 
         //  Prevent new ticket if customer has unresolved HIGH priority ticket
-        boolean hasUnresolvedHighPriority = ticketRepository.findByCustomer_CustomerId(dto.customerId())
+        boolean hasUnresolvedHighPriority = ticketRepository.findByCustomer_UserId(dto.customerId())
                 .stream()
                 .anyMatch(t -> t.getPriority() == TicketPriority.HIGH &&
                         t.getStatus() != TicketStatus.RESOLVED);
@@ -57,7 +57,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<TicketSummaryDTO> getTicketsByAgent(Long agentId) {
         log.debug("Fetching tickets for agent ID {}", agentId);
-        return ticketRepository.findByAgent_AgentId(agentId)
+        return ticketRepository.findByAgent_UserId(agentId)
                 .stream()
                 .map(mapper::toTicketSummary)
                 .collect(Collectors.toList());
@@ -66,7 +66,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<TicketSummaryDTO> getTicketsByCustomer(Long customerId) {
         log.debug("Fetching tickets for customer ID {}", customerId);
-        return ticketRepository.findByCustomer_CustomerId(customerId)
+        return ticketRepository.findByCustomer_UserId(customerId)
                 .stream()
                 .map(mapper::toTicketSummary)
                 .collect(Collectors.toList());

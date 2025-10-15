@@ -11,7 +11,5 @@ import java.util.Optional;
 public interface SupportAgentRepository extends JpaRepository<SupportAgent, Long> {
     Optional<SupportAgent> findByUserName(String userName);
     boolean existsByEmail(String email);
-    List<SupportAgent> findByManager_ManagerId(Long managerId);
-
-    boolean existsByUser_UserName(String userName);
+    List<SupportAgent> findByManager_UserId(Long managerUserId);
 }

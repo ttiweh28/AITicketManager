@@ -42,6 +42,7 @@ public class DataSeeder implements CommandLineRunner {
             agent.setEmail("agent1@ads.com");
             agent.setPassword(passwordEncoder.encode("agent123"));
             agent.setPhone("555-222-2222");
+            agent.setExpertise("Billing");
             agent.setRole(Role.AGENT);
             agentRepository.save(agent);
             System.out.println("✅ Seeded Agent: agent1 / agent123");

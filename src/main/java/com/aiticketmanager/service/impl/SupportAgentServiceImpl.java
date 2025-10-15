@@ -33,7 +33,7 @@ public class SupportAgentServiceImpl implements SupportAgentService {
                 .orElseThrow(() -> new IllegalArgumentException("Agent not found"));
 
         // Rule: no more than 10 unresolved tickets
-        long activeTickets = ticketRepository.findByAgent_AgentId(agentId)
+        long activeTickets = ticketRepository.findByAgent_UserId(agentId)
                 .stream()
                 .filter(t -> t.getStatus() != com.aiticketmanager.model.enums.TicketStatus.RESOLVED)
                 .count();
