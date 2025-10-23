@@ -2,6 +2,7 @@ package com.aiticketmanager.config;
 
 import com.aiticketmanager.security.CustomUserDetailsService;
 import com.aiticketmanager.security.JwtAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,13 +19,22 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity          // ✅ This enables core Spring Security configuration
-@EnableMethodSecurity       // ✅ Optional but useful for @PreAuthorize
+@EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
+
+
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/webjars/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,13 +42,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/tickets/**").hasAnyRole("CUSTOMER", "AGENT", "MANAGER")
-                        .requestMatchers("/api/agents/**").hasRole("MANAGER")
-                        .requestMatchers("/api/managers/**").hasRole("MANAGER")
+                        .requestMatchers("/api/tickets/**").hasAnyAuthority("CUSTOMER", "AGENT", "MANAGER")
+                        .requestMatchers("/api/agents/**").hasAuthority("MANAGER")
+                        .requestMatchers("/api/managers/**").hasAuthority("MANAGER")
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider())   // ✅ include provider explicitly
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -50,7 +62,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager(); // ✅ properly wired by Spring now
+        return config.getAuthenticationManager();
     }
 
     @Bean

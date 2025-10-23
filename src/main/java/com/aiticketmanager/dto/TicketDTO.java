@@ -9,10 +9,10 @@ import java.time.LocalDate;
 
 public record TicketDTO(
         Long ticketId,
-        @NotBlank String title,
-        @NotBlank String description,
-        @NotNull TicketCategory category,
-        @NotNull TicketPriority priority,
+        String title,
+        String description,
+        TicketCategory category,
+        TicketPriority priority,
         TicketStatus status,
         LocalDate submissionDate,
         Long customerId,

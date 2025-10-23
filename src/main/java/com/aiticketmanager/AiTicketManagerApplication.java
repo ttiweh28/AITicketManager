@@ -8,7 +8,7 @@ public class AiTicketManagerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AiTicketManagerApplication.class, args);
-        System.out.println("🚀 AI Ticket Manager is running...");
+        System.out.println("AI Ticket Manager is running...");
 
     }
 }

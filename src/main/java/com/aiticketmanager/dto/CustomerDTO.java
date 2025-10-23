@@ -12,4 +12,5 @@ public record CustomerDTO(
         String email,
         String phone,
         List<TicketSummaryDTO> tickets
+
 ) {}

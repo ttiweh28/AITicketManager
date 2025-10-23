@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -27,8 +29,9 @@ public class AuthController {
     private final CustomerRepository customerRepository;
     private final SupportAgentRepository supportAgentRepository;
     private final ManagerRepository managerRepository;
+    private final UserDetailsService userDetailsService;
 
-    // ===== CUSTOMER REGISTRATION =====
+
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(@RequestBody Customer customer) {
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
@@ -36,7 +39,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Customer registered successfully"));
     }
 
-    // ===== SUPPORT AGENT REGISTRATION =====
+
     @PostMapping("/register/agent")
     public ResponseEntity<?> registerAgent(@RequestBody SupportAgent agent) {
         agent.setPassword(passwordEncoder.encode(agent.getPassword()));
@@ -44,7 +47,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Support agent registered successfully"));
     }
 
-    // ===== MANAGER REGISTRATION =====
+
     @PostMapping("/register/manager")
     public ResponseEntity<?> registerManager(@RequestBody Manager manager) {
         manager.setPassword(passwordEncoder.encode(manager.getPassword()));
@@ -52,7 +55,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Manager registered successfully"));
     }
 
-    // ===== LOGIN (ALL USERS) =====
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -60,8 +63,14 @@ public class AuthController {
 
         authManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-        String token = jwtService.generateToken(username, Map.of());
-        return ResponseEntity.ok(Map.of("token", token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String token = jwtService.generateToken(userDetails);
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "username", username,
+                "roles", userDetails.getAuthorities()
+        ));
+
     }
 }
 

@@ -7,9 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 
 import java.util.List;
 
+@Tag(name = "Customer Management", description = "Endpoints for managing customers")
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -17,6 +22,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+    @Operation(summary = "Create a new customer", description = "Registers a new customer in the system")
+    @ApiResponse(responseCode = "201", description = "Customer created successfully")
     @PostMapping
     public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(customerService.createCustomer(dto));

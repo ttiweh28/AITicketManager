@@ -4,7 +4,6 @@ import com.aiticketmanager.model.enums.TicketCategory;
 import com.aiticketmanager.model.enums.TicketPriority;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -37,22 +36,25 @@ public class AIClient {
     public record ClassificationResult(TicketCategory category, TicketPriority priority) {}
 
     public ClassificationResult classifyTicket(String title, String description) {
+        log.info("classifyTicket() called for: title='{}'", title);
+
         if (mockEnabled) {
-            // Deterministic result for tests/CI
+            log.warn("AI mock mode enabled – returning simulated classification");
             return new ClassificationResult(TicketCategory.OTHER, TicketPriority.MEDIUM);
         }
 
         String text = (title == null ? "" : title) + " -- " + (description == null ? "" : description);
+        log.info("Calling Hugging Face model at {} (token present: {})", aiServiceUrl, apiToken != null);
 
-        // Candidate labels should match your enum names or be mappable to them
         List<String> labels = List.of("SOFTWARE_BUG", "BILLING", "NETWORK", "ACCOUNT_ACCESS", "OTHER");
-
         Map<String, Object> requestBody = Map.of(
                 "inputs", text,
                 "parameters", Map.of("candidate_labels", labels)
         );
 
         try {
+            log.debug("➡Sending request body: {}", requestBody);
+
             Map<?, ?> response = webClient.post()
                     .uri(aiServiceUrl)
                     .headers(h -> {
@@ -66,22 +68,25 @@ public class AIClient {
                     .timeout(timeout)
                     .block();
 
-            // Expected response: { "labels": [...], "scores": [...] }
+            log.debug("Hugging Face raw response: {}", response);
+
             @SuppressWarnings("unchecked")
             List<String> outLabels = (List<String>) response.get("labels");
             @SuppressWarnings("unchecked")
             List<Number> scores = (List<Number>) response.get("scores");
 
             if (outLabels == null || outLabels.isEmpty()) {
-                log.warn("HF returned no labels. Falling back.");
+                log.warn("Hugging Face returned no labels — falling back to default classification");
                 return new ClassificationResult(TicketCategory.OTHER, TicketPriority.MEDIUM);
             }
 
             String top = outLabels.get(0);
-            double topScore = scores != null && !scores.isEmpty() ? scores.get(0).doubleValue() : 0.5;
+            double topScore = (scores != null && !scores.isEmpty()) ? scores.get(0).doubleValue() : 0.5;
 
             TicketCategory category = toCategory(top);
             TicketPriority priority = toPriority(topScore, category, text);
+
+            log.info("Classified as Category={}, Priority={}", category, priority);
 
             return new ClassificationResult(category, priority);
 
@@ -93,12 +98,10 @@ public class AIClient {
 
     private TicketCategory toCategory(String label) {
         if (label == null) return TicketCategory.OTHER;
-        // Normalize label to enum name
         String normalized = label.trim().toUpperCase().replace(' ', '_');
         try {
             return TicketCategory.valueOf(normalized);
         } catch (IllegalArgumentException ex) {
-            // Basic mapping if HF returns different casing or synonyms
             return switch (normalized) {
                 case "SOFTWARE", "BUG", "SOFTWARE_BUG" -> TicketCategory.SOFTWARE_BUG;
                 case "BILLING", "PAYMENT" -> TicketCategory.BILLING;
@@ -110,7 +113,6 @@ public class AIClient {
     }
 
     private TicketPriority toPriority(double confidence, TicketCategory category, String text) {
-        // Simple heuristic: high confidence or keywords → higher priority
         String lc = text.toLowerCase();
         boolean urgentKeywords = lc.contains("cannot") || lc.contains("locked") || lc.contains("down") || lc.contains("crash");
 
