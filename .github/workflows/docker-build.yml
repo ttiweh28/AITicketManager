@@ -1,0 +1,45 @@
+name: Docker Build and Containerize
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  dockerize:
+    name: Build Docker images (App + MySQL)
+    runs-on: ubuntu-latest
+
+    env:
+      AI_API_TOKEN: ${{ secrets.AI_API_TOKEN }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      AI_SERVICE_URL: https://api-inference.huggingface.co/models/facebook/bart-large-mnli
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      AI_MOCK_ENABLED: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and run docker-compose
+        run: |
+          docker compose down -v
+          docker compose up --build -d
+
+      - name: Wait for containers to start
+        run: |
+          echo "Waiting for app and database to initialize..."
+          sleep 25
+          docker ps
+
+      - name: Verify application is running
+        run: |
+          curl -f http://localhost:8080/swagger-ui/index.html || (docker logs aiticketmanager_app && exit 1)
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
