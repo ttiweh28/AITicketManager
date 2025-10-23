@@ -1,6 +1,8 @@
 package com.aiticketmanager.service;
 
 import com.aiticketmanager.dto.TicketDTO;
+import com.aiticketmanager.integration.AIClient;
+import com.aiticketmanager.model.Customer;
 import com.aiticketmanager.model.Ticket;
 import com.aiticketmanager.model.enums.TicketCategory;
 import com.aiticketmanager.model.enums.TicketPriority;
@@ -17,6 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TicketServiceImplTest {
-
+    @Mock private AIClient aiClient;
     @Mock private TicketRepository ticketRepository;
     @Mock private CustomerRepository customerRepository;
     @Mock private SupportAgentRepository agentRepository;
@@ -60,6 +66,22 @@ class TicketServiceImplTest {
                 null,
                 null
         );
+        // mock authentication
+        Authentication auth = new UsernamePasswordAuthenticationToken("testuser", "password");
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        // mock AI classification
+        lenient().when(aiClient.classifyTicket(anyString(), anyString()))
+                .thenReturn(new AIClient.ClassificationResult(TicketCategory.OTHER, TicketPriority.LOW));
+
+        // mock customer lookup
+        var customer = new Customer();
+        customer.setUserId(1L);
+        customer.setUserName("testuser");
+       lenient().when(customerRepository.findByUserName("testuser"))
+                .thenReturn(Optional.of(customer));
 
     }
 
