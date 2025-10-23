@@ -10,6 +10,10 @@ jobs:
   build:
     name: Build and Test with H2
     runs-on: ubuntu-latest
+    env:
+      AI_API_TOKEN: ${{ secrets.AI_API_TOKEN }}
+      AI_SERVICE_URL: https://api-inference.huggingface.co/models/facebook/bart-large-mnli
+      AI_MOCK_ENABLED: false
 
     steps:
       - name: Checkout repository
