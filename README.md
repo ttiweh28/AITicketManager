@@ -35,11 +35,3 @@ An intelligent customer support ticket management system built with **Spring Boo
 - Docker Desktop installed
 - Hugging Face API Token (optional)
 
-### Steps
-```bash
-# Clone the repository
-git clone https://github.com/<your-username>/AITicketManager.git
-cd AITicketManager
-
-# Build and start containers
-docker compose up --build
